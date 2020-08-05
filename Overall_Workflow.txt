@@ -1,0 +1,47 @@
+'''
+@begin Overall_Data_Cleaning_Workflow @desc Overall Workflow for USDA Farmers Markets dataset cleaning project
+@in FarmersMarket_dataset_Original_Dirty_CSV @uri file://data/FarmersMarket_dataset_Original_Dirty.csv
+    
+    @begin CreateOpenRefineDataCleaningProject @desc Import the Raw Farmers Markets dataset and Create OpenRefine project for data cleaning
+    @in FarmersMarket_dataset_Original_Dirty_CSV @uri file://data/FarmersMarket_dataset_Original_Dirty.csv
+    @out USDA_Farmers_Market_OR_cleaning_project
+    @end CreateOpenRefineDataCleaningProject
+
+    @begin CaptureOpenRefineProvenance @desc Export the provenance/ operations history of data cleaning procedure from OpenRefine project in the JSON format
+    @in USDA_Farmers_Market_OR_cleaning_project
+    @out Open_Refine_History_json @uri file://openrefine/Open_Refine_History.json
+    @end CaptureOpenRefineProvenance
+
+    @begin ExportOpenRefineCleanedDataSet @desc Export the cleaned data set from open refine in csv format
+    @in USDA_Farmers_Market_OR_cleaning_project
+    @out FarmersMarket_dataset_OR_Refined_CSV @uri file://openrefine/FarmersMarket_dataset_OR_Refined.csv
+    @end ExportOpenRefineCleanedDataSet
+
+    @begin CreateSQLiteDBSchema @desc Import the OR refined data set into SQLite and create a DB with table schema based on clean data set
+    @in FarmersMarket_dataset_OR_Refined_CSV @uri file://openrefine/FarmersMarket_dataset_OR_Refined.csv
+    @out FarmersMarket_DataCleaning_Project_DB @uri file://sqlite/FarmersMarket_DataCleaning_Project.db
+    @end CreateSQLiteDBSchema
+
+    @begin IntegrityCheckWithSQLite @desc Use sqlite to check integrity of data and record checks in Queries.txt
+    @in FarmersMarket_DataCleaning_Project_DB @uri file://sqlite/FarmersMarket_DataCleaning_Project.db
+    @out FarmersMarket_Integrity_Checks @uri file://sqlite/Queries.txt
+    @end IntegrityCheckWithSQLite
+
+    @begin CleanWithSQLite @desc Use sqlite to clean-up IC Violations and remove any duplicates or invalid entries
+    @in FarmersMarket_DataCleaning_Project_DB @uri file://sqlite/FarmersMarket_DataCleaning_Project.db
+    @out FarmersMarketFinalCleanedSQLite_DB @uri file://sqlite/FarmersMarket_DataCleaning_Project.db
+    @end CleanWithSQLite
+
+    @begin ExportSQLiteCleanedDataSet @desc Export the final clean data set suitable for required use cases from sqlite in csv format
+    @in FarmersMarketFinalCleanedSQLite_DB @uri file://sqlite/FarmersMarket_DataCleaning_Project.db
+    @out FarmersMarket_dataset_Final_Refined_CSV @uri file://data/FarmersMarket_dataset_Final_Refined.csv
+    @end ExportSQLiteCleanedDataSet
+
+    @begin QueryDBForUsecaseFitnessValidation @desc Use sqlite to retrieve in-sights for the required use cases
+    @in FarmersMarketFinalCleanedSQLite_DB @uri file://sqlite/FarmersMarket_DataCleaning_Project.db
+    @out FarmersMarket_Fitness_Validations @uri file://sqlite/Queries.txt
+    @end QueryDBForUsecaseFitnessValidation
+    
+@out FarmersMarket_dataset_Final_Refined_CSV @uri file://data/FarmersMarket_dataset_Final_Refined.csv
+@end Overall_Data_Cleaning_Workflow
+'''

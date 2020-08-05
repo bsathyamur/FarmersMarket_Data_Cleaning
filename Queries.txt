@@ -1,0 +1,157 @@
+-- FarmersMarket_dataset Data Cleaning Final Project
+-- Team Name: Team Spirit (Gowri Shankar Ramanan & Balaji Sathyamurthy)
+
+-- Query 1:
+-- IC Validation on Primary Key FMID
+SELECT COUNT(FMID)
+FROM FarmersMarket
+WHERE FMID IS NULL OR FMID = '';
+
+/*
+COUNT(FMID)
+------------
+0
+*/
+
+-- Query 2:
+-- IC Validation based on Natural Unique Keys FMID and MarketName fields
+SELECT COUNT(FMID)
+FROM FarmersMarket
+WHERE FMID IS NULL OR FMID = '' 
+OR MarketName IS NULL OR MarketName = '';
+
+/*
+COUNT(FMID)
+------------
+0
+*/
+
+-- Query 3:
+-- IC Validation based on Duplication check on MarketName column
+SELECT MarketName, city, State, grel_valid_zip, COUNT(FMID)
+FROM FarmersMarket
+GROUP BY MarketName, city, State, grel_valid_zip 
+HAVING COUNT(FMID) > 1
+ORDER BY COUNT(FMID) DESC;
+
+/*
+MarketName	                        city	        State	    grel_valid_zip	COUNT(FMID)
+---------------------------------------------------------------------------------------------------
+Country Farm & Craft Market Paso Park	Paso Robles	California	93446		3
+Middlebury Farmers' Market		Middlebury	Vermont				3
+Allen County Farmers' Market		IOLA		Kansas		66749		2
+BOISE FARMERS MARKET			Boise City	Idaho		83702		2
+Bigfork Farmers' Market Cooperative	Bigfork		Montana		59911		2
+*/
+
+--Execution finished without errors.
+--Result: 56 rows returned in 102ms
+--Duplicates found
+
+
+-- Query 4:
+-- Identify ideal duplicate candidates to be removed based on duplicate MarketNames
+WITH ValidMarkets AS
+(SELECT MarketName, city, State, grel_valid_zip, MIN(FMID) AS ValidFMID
+FROM FarmersMarket
+GROUP BY MarketName, city, State, grel_valid_zip 
+HAVING COUNT(FMID) > 1
+ORDER BY COUNT(FMID) DESC)
+
+SELECT COUNT(*) FROM FarmersMarket AS FM, ValidMarkets AS VM
+WHERE FM.MarketName = VM.MarketName AND FM.city = VM.city AND FM.State = VM.state --AND FM.grel_valid_zip = VM.grel_valid_zip
+AND FM.FMID <> VM.ValidFMID
+ORDER BY FM.MarketName;
+
+--Execution finished without errors.
+--Result: 70 rows returned in 276ms
+
+-- Query 5:
+-- Remove Duplicates/ Invalid Entries which violates IC based on queries above
+WITH ValidMarkets AS
+(SELECT MarketName, city, State, grel_valid_zip, MIN(FMID) AS ValidFMID
+FROM FarmersMarket
+GROUP BY MarketName, city, State, grel_valid_zip 
+HAVING COUNT(FMID) > 1
+ORDER BY COUNT(FMID) DESC)
+
+DELETE FROM FarmersMarket WHERE FMID IN
+(SELECT FM.FMID FROM FarmersMarket AS FM, ValidMarkets AS VM
+WHERE FM.MarketName = VM.MarketName AND FM.city = VM.city AND FM.State = VM.state 
+--AND FM.zip = VM.zip
+AND FM.FMID <> VM.ValidFMID
+ORDER BY FM.MarketName)
+;
+
+--Execution finished without errors.
+--Result: query executed successfully. 70 Rows Removed. Took 105ms
+--Upon re-executing Query 4 in SQLite to check, no more duplicate rows returned. Data is Clean!
+
+-- Query 6:
+--Check for records with valid zipcode
+SELECT FMID,grel_valid_zip
+FROM FarmersMarket
+WHERE TRIM(grel_valid_zip) <> ""
+
+/*
+COUNT(FMID)
+------------
+6910
+*/
+
+-- Query 7:
+--Check if the from date is greater than to date for the season dates
+SELECT FMID,MarketName,
+       STRFTIME('%Y-%m-%d',Season1FromDate) AS SEASON1FROMDT,
+	   STRFTIME('%Y-%m-%d',Season1ToDate)   AS SEASON1TODT
+FROM FarmersMarket
+WHERE DATE(Season1ToDate) < DATE(Season1FromDate) 
+  AND Season1FromDate IS NOT NULL 
+  AND Season1ToDate IS NOT NULL;
+
+/*
+COUNT(FMID)
+------------
+487
+*/
+
+-- Query 8
+--Derive Month and Day Part of the season dates to determine the seasonality of the Farmers Market
+SELECT FMID,
+       STRFTIME('%d', DATE(Season1FromDate)) AS season1fromdate_daypart,
+       STRFTIME('%m', DATE(Season1FromDate)) AS season1fromdate_monthpart,
+       STRFTIME('%d', DATE(Season1ToDate))   AS season1todate_daypart,
+       STRFTIME('%m', DATE(Season1ToDate))   AS season1todate_monthpart
+FROM FarmersMarket 
+WHERE Season1ToDate IS NOT NULL 
+  AND Season1FromDate IS NOT NULL
+
+/*
+COUNT(FMID)
+------------
+4768
+*/
+
+--Query 9
+--Check for MarketName which accept credit card payment
+SELECT FMID,MarketName
+FROM FarmersMarket 
+WHERE Credit = 'Y'
+
+/*
+COUNT(FMID)
+------------
+5270
+*/
+
+--Query 10
+--Check for MarketName which sells organic cheese
+SELECT FMID,MarketName
+FROM FarmersMarket 
+WHERE (Organic = 'Y' and Cheese = 'Y')
+
+/*
+COUNT(FMID)
+------------
+1622
+*/

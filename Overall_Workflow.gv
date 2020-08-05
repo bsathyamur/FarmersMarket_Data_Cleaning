@@ -1,0 +1,65 @@
+
+/* Start of top-level graph */
+digraph Workflow {
+rankdir=TB
+
+/* Title for graph */
+fontname=Courier; fontsize=18; labelloc=t
+label=Overall_Data_Cleaning_Workflow
+
+/* Start of double cluster for drawing box around nodes in workflow */
+subgraph cluster_workflow_box_outer { label=""; color=black; penwidth=2
+subgraph cluster_workflow_box_inner { label=""; color=white
+
+/* Style for nodes representing atomic programs in workflow */
+node[shape=box style=filled fillcolor="#CCFFCC" peripheries=1 fontname=Courier]
+
+/* Nodes representing atomic programs in workflow */
+CreateOpenRefineDataCleaningProject [shape=record rankdir=LR label="{<f0> CreateOpenRefineDataCleaningProject |<f1> Import the Raw Farmers Markets dataset and Create OpenRefine project for data cleaning}"];
+CaptureOpenRefineProvenance [shape=record rankdir=LR label="{<f0> CaptureOpenRefineProvenance |<f1> Export the provenance/ operations history of data cleaning procedure from OpenRefine project in the JSON format}"];
+ExportOpenRefineCleanedDataSet [shape=record rankdir=LR label="{<f0> ExportOpenRefineCleanedDataSet |<f1> Export the cleaned data set from open refine in csv format}"];
+CreateSQLiteDBSchema [shape=record rankdir=LR label="{<f0> CreateSQLiteDBSchema |<f1> Import the OR refined data set into SQLite and create a DB with table schema based on clean data set}"];
+IntegrityCheckWithSQLite [shape=record rankdir=LR label="{<f0> IntegrityCheckWithSQLite |<f1> Use sqlite to check integrity of data and record checks in Queries.txt}"];
+CleanWithSQLite [shape=record rankdir=LR label="{<f0> CleanWithSQLite |<f1> Use sqlite to clean-up IC Violations and remove any duplicates or invalid entries}"];
+ExportSQLiteCleanedDataSet [shape=record rankdir=LR label="{<f0> ExportSQLiteCleanedDataSet |<f1> Export the final clean data set suitable for required use cases from sqlite in csv format}"];
+QueryDBForUsecaseFitnessValidation [shape=record rankdir=LR label="{<f0> QueryDBForUsecaseFitnessValidation |<f1> Use sqlite to retrieve in-sights for the required use cases}"];
+
+/* Style for nodes representing non-parameter data channels in workflow */
+node[shape=box style="rounded,filled" fillcolor="#FFFFCC" peripheries=1 fontname=Helvetica]
+
+/* Nodes for non-parameter data channels in workflow */
+FarmersMarket_dataset_Original_Dirty_CSV [shape=record rankdir=LR label="{<f0> FarmersMarket_dataset_Original_Dirty_CSV |<f1> file\://data/FarmersMarket_dataset_Original_Dirty.csv}"];
+USDA_Farmers_Market_OR_cleaning_project
+FarmersMarket_dataset_OR_Refined_CSV [shape=record rankdir=LR label="{<f0> FarmersMarket_dataset_OR_Refined_CSV |<f1> file\://openrefine/FarmersMarket_dataset_OR_Refined.csv}"];
+FarmersMarket_DataCleaning_Project_DB [shape=record rankdir=LR label="{<f0> FarmersMarket_DataCleaning_Project_DB |<f1> file\://sqlite/FarmersMarket_DataCleaning_Project.db}"];
+FarmersMarketFinalCleanedSQLite_DB [shape=record rankdir=LR label="{<f0> FarmersMarketFinalCleanedSQLite_DB |<f1> file\://sqlite/FarmersMarket_DataCleaning_Project.db}"];
+FarmersMarket_dataset_Final_Refined_CSV [shape=record rankdir=LR label="{<f0> FarmersMarket_dataset_Final_Refined_CSV |<f1> file\://data/FarmersMarket_dataset_Final_Refined.csv}"];
+
+/* Style for nodes representing parameter channels in workflow */
+node[shape=box style="rounded,filled" fillcolor="#FCFCFC" peripheries=1 fontname=Helvetica]
+
+/* Nodes representing parameter channels in workflow */
+
+/* Edges representing connections between programs and channels */
+CreateOpenRefineDataCleaningProject -> USDA_Farmers_Market_OR_cleaning_project
+FarmersMarket_dataset_Original_Dirty_CSV -> CreateOpenRefineDataCleaningProject
+CaptureOpenRefineProvenance -> Open_Refine_History_json
+USDA_Farmers_Market_OR_cleaning_project -> CaptureOpenRefineProvenance
+ExportOpenRefineCleanedDataSet -> FarmersMarket_dataset_OR_Refined_CSV
+USDA_Farmers_Market_OR_cleaning_project -> ExportOpenRefineCleanedDataSet
+CreateSQLiteDBSchema -> FarmersMarket_DataCleaning_Project_DB
+FarmersMarket_dataset_OR_Refined_CSV -> CreateSQLiteDBSchema
+IntegrityCheckWithSQLite -> FarmersMarket_Integrity_Checks
+FarmersMarket_DataCleaning_Project_DB -> IntegrityCheckWithSQLite
+CleanWithSQLite -> FarmersMarketFinalCleanedSQLite_DB
+FarmersMarket_DataCleaning_Project_DB -> CleanWithSQLite
+ExportSQLiteCleanedDataSet -> FarmersMarket_dataset_Final_Refined_CSV
+FarmersMarketFinalCleanedSQLite_DB -> ExportSQLiteCleanedDataSet
+QueryDBForUsecaseFitnessValidation -> FarmersMarket_Fitness_Validations
+FarmersMarketFinalCleanedSQLite_DB -> QueryDBForUsecaseFitnessValidation
+
+/* End of double cluster for drawing box around nodes in workflow */
+}}
+
+/* End of top-level graph */
+}
