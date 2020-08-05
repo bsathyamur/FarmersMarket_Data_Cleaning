@@ -53,3 +53,13 @@ The cleaned dataset from openRefine is imported into sqllite database and variou
 ## PART 4: CREATING A WORKFLOW MODEL
 YesWorkflow model/ prototype has been used to annotate the data cleaning procedure followed, and to generate visual model representations using graphviz. The workflows have been created for both overall data cleaning process as well as the open refine tool specific operation history to represent the data provenance better.
 
+![yesWorkFlow Model](https://github.com/bsathyamur/FarmersMarket_Data_Cleaning/blob/master/Overall_Workflow-img.png)
+
+## PART 5: CONCLUSION:
+
+The USDA Farmers Markets Dataset is overall a well-structured dataset except that data is incomplete and inconsistent on several columns which required many parts of data to be cleaned and reformatted to improve consistency and integrity. There are few columns in the dataset which becomes completely unusable such as “updateTime”, and “Season1StartDate”, which is very inconsistent and contains either “Month” or “DD/MM/YYYY” in variable text format, and there were overlapping seasonal dates observed, which makes it unusable specifically for use-cases related to seasonal date specific search queries. Lot of anomalies have been observed with respect to invalid date ranges with Season_To_Date being less than the From_Date and those have been cleaned up. With these cleaned up season1 start and end dates, we can search for farmers market for a specific seasonality more accurately.
+
+Duplicate entries of Market information with different FMIDs but with similar Market Name profile information, address etc. have also been identified as Integrity violations through queries done through SQLite database. These potential duplicates have been cleaned up for more accurate representations.
+
+Overall, the dataset was cleaned appropriately for the hypothetical use cases. Zip code data has also been validated for accuracy and the discrepancies were eliminated, thus making it usable for comparison between the number of farmers markets in each city or states and to use with geographic positioning related use cases
+
